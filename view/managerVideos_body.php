@@ -227,7 +227,7 @@
                     </div>
                     <?php
                 }
-                if (empty($advancedCustom->disableVideoSwap)) {
+                if (empty($advancedCustom->disableVideoSwap) && (empty($advancedCustom->makeSwapVideosOnlyForAdmin) || User::isAdmin())) {
                     ?>
                     <button class="btn btn-primary" id="swapBtn">
                         <i class="fas fa-random"></i>  <span class="hidden-md hidden-sm hidden-xs"><?php echo __('Swap Video File'); ?></span>
@@ -367,8 +367,7 @@
                                         }
                                         ?>
                                     </select>
-
-                                    <div class="row" <?php if (!User::isAdmin()) { ?> style="display: none;" <?php } ?>>
+                                    <div class="row" <?php if (empty($advancedCustomUser->userCanChangeVideoOwner) && !User::isAdmin()) { ?> style="display: none;" <?php } ?>>
                                         <h3><?php echo __("Media Owner"); ?></h3>
                                         <div class="col-md-2">
                                             <img id="inputUserOwner-img" src="view/img/userSilhouette.jpg" class="img img-responsive img-circle" style="max-height: 60px;">
@@ -1647,7 +1646,7 @@ echo AVideoPlugin::getManagerVideosReset();
             });
     });
 <?php
-if (empty($advancedCustom->disableVideoSwap)) {
+if (empty($advancedCustom->disableVideoSwap) && (empty($advancedCustom->makeSwapVideosOnlyForAdmin) || User::isAdmin())) {
     ?>
 
         $("#swapBtn").click(function () {

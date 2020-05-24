@@ -80,7 +80,7 @@ if(empty($video['id'])){
     <select class="form-control" id="sortBy" >
         <option value="titleAZ" data-icon="glyphicon-sort-by-attributes" <?php echo (!empty($_POST['sort']['title']) && strtolower($_POST['sort']['title']) == 'asc') ? "selected='selected'" : "" ?>> <?php echo __("Title (A-Z)"); ?></option>
         <option value="titleZA" data-icon="glyphicon-sort-by-attributes-alt" <?php echo (!empty($_POST['sort']['title']) && strtolower($_POST['sort']['title']) == 'desc') ? "selected='selected'" : "" ?>> <?php echo __("Title (Z-A)"); ?></option>
-        <option value="newest" data-icon="glyphicon-sort-by-attributes" <?php echo (!empty($_POST['sort']['created']) && strtolower($_POST['sort']['created']) == 'desc') ? "selected='selected'" : "" ?>> <?php echo __("Date added (newest)"); ?></option>
+        <option value="newest" data-icon="glyphicon-sort-by-attributes" <?php echo (empty($_POST['sort']) || (!empty($_POST['sort']['created']) && strtolower($_POST['sort']['created'])) == 'desc') ? "selected='selected'" : "" ?>> <?php echo __("Date added (newest)"); ?></option>
         <option value="oldest" data-icon="glyphicon-sort-by-attributes-alt" <?php echo (!empty($_POST['sort']['created']) && strtolower($_POST['sort']['created']) == 'asc') ? "selected='selected'" : "" ?>> <?php echo __("Date added (oldest)"); ?></option>
         <option value="popular" data-icon="glyphicon-thumbs-up"  <?php echo (!empty($_POST['sort']['likes'])) ? "selected='selected'" : "" ?>> <?php echo __("Most popular"); ?></option>
         <?php
@@ -256,19 +256,19 @@ if (!empty($get)) {
         <?php
         if(!empty($videoName) && !empty($video['id'])){
         ?>
-        var url = '<?php echo $global['webSiteRootURL'], $catLink; ?>video/<?php echo $videoName; ?>' + page + query;
+        var url = '<?php echo $global['webSiteRootURL'], addslashes($catLink); ?>video/<?php echo addslashes($videoName); ?>' + page + query;
         <?php
         }else if(!empty ($_GET['evideo'])){
         ?>
-        var url = '<?php echo $global['webSiteRootURL'], $catLink; ?>evideo/<?php echo $_GET['evideo']; ?>';
+        var url = '<?php echo $global['webSiteRootURL'], addslashes($catLink); ?>evideo/<?php echo $_GET['evideo']; ?>';
         <?php
         }else{
         ?>
-        var url = '<?php echo $global['webSiteRootURL'], $catLink; ?>';
+        var url = '<?php echo $global['webSiteRootURL'], addslashes($catLink); ?>';
         <?php
         }
         ?>
-        var urlList = "<?php echo $global['webSiteRootURL']; ?>videosList/<?php echo $catLink; ?>video/<?php echo $videoName; ?>" + page + query;
+        var urlList = "<?php echo $global['webSiteRootURL']; ?>videosList/<?php echo addslashes($catLink); ?>video/<?php echo addslashes($videoName); ?>" + page + query;
 
 
                         history.pushState(null, null, url);

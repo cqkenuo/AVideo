@@ -4,7 +4,7 @@ if (file_exists("../videos/configuration.php")) {
     exit;
 }
 
-$installationVersion = "8.8";
+$installationVersion = "8.9";
 
 
 header('Content-Type: application/json');
@@ -114,7 +114,7 @@ if ($mysqli->query($sql) !== TRUE) {
 
 $sql = "INSERT INTO configurations (id, video_resolution, users_id, version, webSiteTitle, language, contactEmail, encoderURL,  created, modified) "
         . " VALUES "
-        . " (1, '858:480', 1,'{$installationVersion}', '{$_POST['webSiteTitle']}', '{$_POST['mainLanguage']}', '{$_POST['contactEmail']}', 'https://encoder2.avideo.com/', now(), now())";
+        . " (1, '858:480', 1,'{$installationVersion}', '{$_POST['webSiteTitle']}', '{$_POST['mainLanguage']}', '{$_POST['contactEmail']}', 'https://encoder1.avideo.com/', now(), now())";
 if ($mysqli->query($sql) !== TRUE) {
     $obj->error = "Error creating configuration: " . $mysqli->error;
     echo json_encode($obj);
@@ -130,9 +130,11 @@ $content = "<?php
 \$global['configurationVersion'] = 2;
 \$global['disableAdvancedConfigurations'] = 0;
 \$global['videoStorageLimitMinutes'] = 0;
+\$global['disableTimeFix'] = 0;
 if(!empty(\$_SERVER['SERVER_NAME']) && \$_SERVER['SERVER_NAME']!=='localhost' && !filter_var(\$_SERVER['SERVER_NAME'], FILTER_VALIDATE_IP)) { 
     // get the subdirectory, if exists
-    \$subDir = str_replace(array(\$_SERVER[\"DOCUMENT_ROOT\"], 'videos/configuration.php'), array('',''), __FILE__);
+    \$file = str_replace(\"\\\\\", \"/\", __FILE__);
+    \$subDir = str_replace(array(\$_SERVER[\"DOCUMENT_ROOT\"], 'videos/configuration.php'), array('',''), \$file);
     \$global['webSiteRootURL'] = \"http\".(!empty(\$_SERVER['HTTPS'])?\"s\":\"\").\"://\".\$_SERVER['SERVER_NAME'].\$subDir;
 }else{
     \$global['webSiteRootURL'] = '{$_POST['webSiteRootURL']}';
@@ -145,6 +147,16 @@ if(!empty(\$_SERVER['SERVER_NAME']) && \$_SERVER['SERVER_NAME']!=='localhost' &&
 \$global['ddosSecondTimeout'] = 5;
 \$global['strictDDOSprotection'] = 0;
 \$global['noDebug'] = 0;
+\$global['webSiteRootPath'] = '';
+if(empty(\$global['webSiteRootPath'])){
+    preg_match('/https?:\/\/[^\/]+(.*)/i', \$global['webSiteRootURL'], \$matches);
+    if(!empty(\$matches[1])){
+        \$global['webSiteRootPath'] = \$matches[1];
+    }
+}
+if(empty(\$global['webSiteRootPath'])){
+    die('Please configure your webSiteRootPath');
+}
 
 \$mysqlHost = '{$_POST['databaseHost']}';
 \$mysqlPort = '{$_POST['databasePort']}';

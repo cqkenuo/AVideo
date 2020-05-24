@@ -29,12 +29,15 @@ class CustomizeUser extends PluginAbstract {
         $obj->userCanAllowFilesShare = false;
         $obj->userCanAllowFilesDownloadSelectPerVideo = false;
         $obj->userCanAllowFilesShareSelectPerVideo = false;
+        $obj->blockEmbedFromSharedVideos = true;
         $obj->userCanProtectVideosWithPassword = true;
+        $obj->userCanChangeVideoOwner = false;
 
         $obj->usersCanCreateNewCategories = !isset($advancedCustom->usersCanCreateNewCategories) ? false : $advancedCustom->usersCanCreateNewCategories;
         $obj->userCanNotChangeCategory = !isset($advancedCustom->userCanNotChangeCategory) ? false : $advancedCustom->userCanNotChangeCategory;
         $obj->userCanNotChangeUserGroup = false;
         $obj->userMustBeLoggedIn = !isset($advancedCustom->userMustBeLoggedIn) ? false : $advancedCustom->userMustBeLoggedIn;
+        $obj->userMustBeLoggedInCloseButtonURL = "";
         $obj->onlyVerifiedEmailCanUpload = !isset($advancedCustom->onlyVerifiedEmailCanUpload) ? false : $advancedCustom->onlyVerifiedEmailCanUpload;
         $obj->sendVerificationMailAutomaic = !isset($advancedCustom->sendVerificationMailAutomaic) ? false : $advancedCustom->sendVerificationMailAutomaic;
         
@@ -149,6 +152,7 @@ class CustomizeUser extends PluginAbstract {
         global $advancedCustom;
 
         if (!empty($advancedCustom->disableShareAndPlaylist)) {
+            _error_log("CustomizeUser::canShareVideosFromUser disableShareAndPlaylist");
             return false;
         }
 
@@ -258,16 +262,18 @@ class CustomizeUser extends PluginAbstract {
     static function canShareVideosFromVideo($videos_id) {
         $video = new Video("", "", $videos_id);
         if (empty($video)) {
+            _error_log("CustomizeUser::canShareVideosFromVideo video not found");
             return false;
         }
-        
         $users_id = $video->getUsers_id();
         if (!self::canShareVideosFromUser($users_id)) {
+            _error_log("CustomizeUser::canShareVideosFromVideo canShareVideosFromUser($users_id) = false");
             return false;
         }
         $obj = AVideoPlugin::getObjectDataIfEnabled("CustomizeUser");
-        if (!empty($obj->userCanAllowFilesShareSelectPerVideo)) {
+        if (!empty($obj->userCanAllowFilesShareSelectPerVideo) && !empty($obj->blockEmbedFromSharedVideos)) {
             if (empty($video->getCan_share())) {
+                _error_log("CustomizeUser::canShareVideosFromVideo video->getCan_share() = false");
                 return false;
             }
         }

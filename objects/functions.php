@@ -2608,8 +2608,10 @@ function get_browser_name($user_agent = "") {
     //     http://php.net/manual/en/function.strpos.php
     $t = " " . $t;
 
-    // Humans / Regular Users     
-    if (strpos($t, 'opera') || strpos($t, 'opr/'))
+    // Humans / Regular Users  
+    if (strpos($t, 'crkey')) {
+        return 'Chromecast';
+    }else if (strpos($t, 'opera') || strpos($t, 'opr/'))
         return 'Opera';
     elseif (strpos($t, 'edge'))
         return 'Edge';
@@ -2993,6 +2995,9 @@ function encrypt_decrypt($string, $action) {
 }
 
 function encryptString($string) {
+    if(is_object($string)){
+        $string = json_encode($string);
+    }
     return encrypt_decrypt($string, 'encrypt');
 }
 
@@ -3005,15 +3010,18 @@ function getToken($timeout=0, $salt=""){
     $obj = new stdClass();
     $obj->salt = $global['salt'].$salt;
     
-    if(empty($timeout)){
+    if(!empty($timeout)){
         $obj->time = time();
         $obj->timeout = $obj->time+$timeout;
     }else{
-        $obj->time = strtotime("Today 01:00:00");
+        $obj->time = strtotime("Today 00:00:00");
         $obj->timeout = strtotime("Today 23:59:59");
+        $obj->timeout += cacheExpirationTime();
     }
+    $strObj = json_encode($obj);
+    //_error_log("Token created: {$strObj}");
     
-    return encryptString(json_encode($obj));
+    return encryptString($strObj);
 }
 
 function verifyToken($token, $salt=""){

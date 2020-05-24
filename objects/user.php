@@ -735,16 +735,14 @@ if (typeof gtag !== \"function\") {
 
     static function checkLoginAttempts() {
         global $advancedCustomUser, $global;
-        if (session_status() == PHP_SESSION_NONE) {
-            session_start();
-        }
         // check for multiple logins attempts to prevent hacking
         if (empty($_SESSION['loginAttempts'])) {
+            _session_start();
             $_SESSION['loginAttempts'] = 0;
         }
         if (!empty($advancedCustomUser->requestCaptchaAfterLoginsAttempts)) {
+            _session_start();
             $_SESSION['loginAttempts'] ++;
-            session_write_close();
             if ($_SESSION['loginAttempts'] > $advancedCustomUser->requestCaptchaAfterLoginsAttempts) {
                 if (empty($_POST['captcha'])) {
                     return false;
@@ -755,7 +753,6 @@ if (typeof gtag !== \"function\") {
                 }
             }
         }
-        session_write_close();
         return true;
     }
 
@@ -1185,7 +1182,7 @@ if (typeof gtag !== \"function\") {
         $this->photoURL = strip_tags($photoURL);
     }
 
-    static function getAllUsers($ignoreAdmin = false, $searchFields = array('name', 'email', 'user', 'channelName', 'about')) {
+    static function getAllUsers($ignoreAdmin = false, $searchFields = array('name', 'email', 'user', 'channelName', 'about'), $status="") {
         if (!self::isAdmin() && !$ignoreAdmin) {
             return false;
         }
@@ -1193,7 +1190,13 @@ if (typeof gtag !== \"function\") {
         //current=1&rowCount=10&sort[sender]=asc&searchPhrase=
         global $global;
         $sql = "SELECT * FROM users WHERE 1=1 ";
-
+        if(!empty($status)){
+            if(strtolower($status)==='i'){
+                $sql .= " AND status = 'i' ";
+            }else{
+                $sql .= " AND status = 'a' ";
+            }
+        }
         $sql .= BootGrid::getSqlFromPost($searchFields);
 
         $user = array();
@@ -1244,7 +1247,7 @@ if (typeof gtag !== \"function\") {
         return $user;
     }
 
-    static function getTotalUsers($ignoreAdmin = false) {
+    static function getTotalUsers($ignoreAdmin = false, $status="") {
         if (!self::isAdmin() && !$ignoreAdmin) {
             return false;
         }
@@ -1253,6 +1256,13 @@ if (typeof gtag !== \"function\") {
         global $global;
         $sql = "SELECT id FROM users WHERE 1=1  ";
 
+        if(!empty($status)){
+            if(strtolower($status)==='i'){
+                $sql .= " AND status = 'i' ";
+            }else{
+                $sql .= " AND status = 'a' ";
+            }
+        }
         $sql .= BootGrid::getSqlSearchFromPost(array('name', 'email', 'user'));
 
         $res = sqlDAL::readSql($sql);
@@ -1295,6 +1305,7 @@ if (typeof gtag !== \"function\") {
     static function createUserIfNotExists($user, $pass, $name, $email, $photoURL, $isAdmin = false, $emailVerified = false) {
         global $global;
         $user = $global['mysqli']->real_escape_string($user);
+        $userId = 0;
         if (!$userId = self::userExists($user)) {
             if (empty($pass)) {
                 $pass = uniqid();
@@ -1308,6 +1319,14 @@ if (typeof gtag !== \"function\") {
             $userObject->setEmailVerified($emailVerified);
             $userId = $userObject->save();
             return $userId;
+        }else{
+            if($emailVerified){
+                $userObj = new User($userId);
+                if(!$userObj->getEmailVerified()){
+                    $userObj->setEmailVerified(1);
+                    $userObj->save();
+                }
+            }
         }
         return $userId;
     }
@@ -1506,7 +1525,7 @@ if (typeof gtag !== \"function\") {
     }
 
     function getEmailVerified() {
-        return $this->emailVerified;
+        return intval($this->emailVerified);
     }
 
     /**
